@@ -16,6 +16,9 @@ proxies.
 
    [hopm]: https://github.com/ircd-hybrid/hopm
 
+`antissh` is sufficiently capable of stopping the IRC spam bots that they IRC spam bots,
+themselves, have been advertising it, in an attempt to prolong the life of their 'botnet.'
+
 
 ## usage
 
