@@ -1,0 +1,3 @@
+[submodule "ircreactor"]
+	path = ircreactor
+	url = https://github.com/mammon-ircd/ircreactor
