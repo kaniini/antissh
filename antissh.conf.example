@@ -1,5 +1,5 @@
 [host]
-host = irc.dereferenced.org
+hostname = irc.dereferenced.org
 port = 6667
 ssl = false
 oper = x x
