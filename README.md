@@ -22,6 +22,7 @@ proxies.
 ```
 $ pip3 install -r requirements.txt
 $ cp antissh.conf.example antissh.conf
+$ vi antissh.conf
 $ python3.6 antissh.py antissh.conf
 ```
 

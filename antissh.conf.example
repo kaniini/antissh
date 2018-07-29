@@ -5,7 +5,7 @@ ssl = false
 oper = x x
 modes = +s +c
 nickname = antissh
-kline_cmd = KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n
+kline_cmd = 'KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.'
 
 [target]
 host = 162.220.112.99
