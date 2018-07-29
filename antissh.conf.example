@@ -8,5 +8,5 @@ nickname = antissh
 kline_cmd = 'KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.'
 
 [target]
-host = 162.220.112.99
+ip = 162.220.112.99
 port = 6667
