@@ -94,3 +94,4 @@ ENV/
 # Rope project settings
 .ropeproject
 
+antissh.conf
