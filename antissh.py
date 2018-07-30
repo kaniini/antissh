@@ -29,6 +29,8 @@ IP_REGEX = re.compile(r'\[[0-9a-f\.:]+\]')
 POSITIVE_HIT_STRING = b'Looking up your hostname'
 DEFAULT_CREDENTIALS = [
     ('ADMIN', 'ADMIN'),
+    ('admin', '123456'),
+    ('admin', ''),
     ('root', '')
 ]
 
