@@ -7,6 +7,7 @@ import sys
 import re
 from asyncirc import irc
 from configparser import ConfigParser
+import logging
 
 config = ConfigParser()
 config.read(sys.argv[1])
@@ -25,7 +26,7 @@ KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip
 # charybdis uses:
 # *** Notice -- Client connecting: kaniini_ (~kaniini@127.0.0.1) [127.0.0.1] {users} [William Pitcock]
 # re.findall(r'\[[0-9a-f\.:]+\]', message)
-IP_REGEX = re.compile(r'\[[0-9a-f\.:]+\]')
+IP_REGEX = re.compile(r'Client connecting\:.*\[([0-9a-f\.:]+)\]')
 POSITIVE_HIT_STRING = b'Looking up your hostname'
 DEFAULT_CREDENTIALS = [
     ('ADMIN', 'ADMIN'),
@@ -83,8 +84,10 @@ def main():
         if 'connecting' not in text:
             return
 
-        ip = IP_REGEX.findall(text)[0][1:-1]
-        asyncio.ensure_future(check_connecting_client(bot, ip))
+        match = IP_REGEX.search(text)
+        if match:
+            ip = match.group(1)
+            asyncio.ensure_future(check_connecting_client(bot, ip))
 
     asyncio.get_event_loop().run_forever()
 
