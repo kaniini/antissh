@@ -52,7 +52,9 @@ async def submit_dronebl(ip):
     headers = {
         'Content-Type': 'text/xml'
     }
-    await aiohttp.post('https://dronebl.org/rpc2', headers=headers, data=envelope)
+
+    async with aiohttp.ClientSession() as session:
+        await session.post('https://dronebl.org/rpc2', headers=headers, data=envelope)
 
 
 async def submit_dnsbl_im(ip):
@@ -67,7 +69,9 @@ async def submit_dnsbl_im(ip):
     headers = {
         'Content-Type': 'application/json'
     }
-    await aiohttp.post('https://api.dnsbl.im/import', headers=headers, data=json.dumps(envelope))
+
+    async with aiohttp.ClientSession() as session:
+        await session.post('https://api.dnsbl.im/import', headers=headers, data=json.dumps(envelope))
 
 
 async def check_with_credentials(ip, target_ip, target_port, username, password):
