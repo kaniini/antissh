@@ -14,6 +14,7 @@ config.read(sys.argv[1])
 
 TARGET_IP = config.get('target', 'ip', fallback='162.220.112.99')
 TARGET_PORT = config.getint('target', 'port', fallback=6667)
+QUICK_MODE = config.getboolean('target', 'quick_mode', fallback=False)
 HOST = config.get('host', 'hostname', fallback='irc.dereferenced.org')
 PORT = config.getint('host', 'port', fallback=6667)
 USE_SSL = config.getboolean('host', 'ssl', fallback=False)
@@ -40,6 +41,8 @@ async def check_with_credentials(ip, target_ip, target_port, username, password)
     """Checks whether a given username or password works to open a direct TCP session."""
     try:
         async with asyncssh.connect(ip, username=username, password=password, known_hosts=None) as conn:
+            if QUICK_MODE:
+                return True
             try:
                 reader, writer = await conn.open_connection(target_ip, target_port)
             except asyncssh.Error:
