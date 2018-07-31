@@ -35,7 +35,8 @@ DEFAULT_CREDENTIALS = [
     ('ADMIN', 'ADMIN'),
     ('admin', '123456'),
     ('admin', ''),
-    ('root', '')
+    ('root', ''),
+    ('root', 'admin')
 ]
 
 # dnsbl settings
