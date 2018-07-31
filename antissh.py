@@ -68,6 +68,7 @@ async def check_connecting_client(bot, ip):
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
     bot = irc.connect(HOST, PORT, use_ssl=USE_SSL)
     bot.register(NICKNAME, "antissh", "antissh proxy checking bot")
 
