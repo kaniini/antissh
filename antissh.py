@@ -5,6 +5,8 @@ import asyncio
 import asyncssh
 import sys
 import re
+import aiohttp
+import json
 from asyncirc import irc
 from configparser import ConfigParser
 import logging
@@ -35,6 +37,37 @@ DEFAULT_CREDENTIALS = [
     ('admin', ''),
     ('root', '')
 ]
+
+# dnsbl settings
+dronebl_key = config.get('dnsbl', 'dronebl_key', fallback=None)
+dnsbl_im_key = config.get('dnsbl', 'dnsbl_im_key', fallback=None)
+dnsbl_active = (dronebl_key is not None or dnsbl_im_key is not None)
+
+
+async def submit_dronebl(ip):
+    add_stanza = '<add ip="{ip}" type="15" port="22" comment="{comment}" />'.format(
+        ip=ip, comment='A vulnerable SSH server on an IOT gateway, detected by antissh.')
+    envelope = '<?xml version="1.0"?><request key="{key}">{stanza}</request>'.format(
+        key=dronebl_key, stanza=add_stanza)
+    headers = {
+        'Content-Type': 'text/xml'
+    }
+    await aiohttp.post('https://dronebl.org/rpc2', headers=headers, data=envelope)
+
+
+async def submit_dnsbl_im(ip):
+    envelope = {
+        'key': dnsbl_im_key,
+        'addresses': [{
+            'ip': ip,
+            'type': '4',
+            'reason': 'A vulnerable SSH server on an IOT gateway, detected by antissh.'
+        }]
+    }
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    await aiohttp.post('https://api.dnsbl.im/import', headers=headers, data=json.dumps(envelope))
 
 
 async def check_with_credentials(ip, target_ip, target_port, username, password):
@@ -69,6 +102,12 @@ async def check_connecting_client(bot, ip):
     if result:
         print('found vulnerable SSH daemon at', ip)
         bot.writeln(KLINE_CMD_TEMPLATE.format(ip=ip))
+
+        if dnsbl_active:
+            tasks = []
+            if dronebl_key: tasks += [submit_dronebl(ip)]
+            if dnsbl_im_key: tasks += [submit_dnsbl_im(ip)]
+            await asyncio.wait(tasks)
 
 
 def main():

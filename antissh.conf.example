@@ -13,3 +13,11 @@ ip = 162.220.112.99
 port = 6667
 # If enabled, skips trying to connect back to the target host above and ban clients as soon as a SSH login with default credentials succeeds
 #quick_mode = true
+
+# report to various DNSBLs
+[dnsbl]
+# ask for an RPC key from DroneBL at: https://www.dronebl.org/rpckey_signup
+# dronebl_key=rgergjkergnjkergjkernjkgergnjke
+
+# ask for an API key from DNSBL.im at: https://www.dnsbl.im/api/request/
+# dnsbl_im_key=bvefrkjbggnergnjkerngjkerngjker
