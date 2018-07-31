@@ -133,6 +133,10 @@ def main():
         match = IP_REGEX.search(text)
         if match:
             ip = match.group(1)
+            
+            if ip in ('0', '255.255.255.255', '127.0.0.1', '::1'):
+                return
+
             asyncio.ensure_future(check_connecting_client(bot, ip))
 
     asyncio.get_event_loop().run_forever()
