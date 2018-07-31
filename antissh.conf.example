@@ -3,10 +3,13 @@ hostname = irc.dereferenced.org
 port = 6667
 ssl = false
 oper = x x
-modes = +s +c
+# Modes to set on connect (optional)
+#modes = +s +c
 nickname = antissh
 kline_cmd = KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.
 
 [target]
 ip = 162.220.112.99
 port = 6667
+# If enabled, skips trying to connect back to the target host above and ban clients as soon as a SSH login with default credentials succeeds
+#quick_mode = true
