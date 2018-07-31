@@ -33,3 +33,9 @@ bindhost = ::
 # 2 = somewhat common login combinations
 # 3 = rare login combinations
 level = 1
+
+[geoip]
+# Download binary database from https://dev.maxmind.com/geoip/geoip2/geolite2/
+#database_path=/path/to/GeoLite2-Country_20180703/GeoLite2-Country.mmdb
+# ISO 3166 country codes separated by spaces, see https://en.wikipedia.org/wiki/ISO_3166-2
+#country_whitelist=DE AT CH FR GB NL US CA
