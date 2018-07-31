@@ -18,7 +18,7 @@ PORT = config.getint('host', 'port', fallback=6667)
 USE_SSL = config.getboolean('host', 'ssl', fallback=False)
 OPER = config.get('host', 'oper', fallback='x x')
 NICKNAME = config.get('host', 'nickname', fallback='antissh')
-MODES = config.get('host', 'modes', fallback='+s +c')
+MODES = config.get('host', 'modes', fallback='')
 KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n')
 
 # advanced users only
@@ -74,7 +74,8 @@ def main():
     @bot.on('irc-001')
     def handle_connection_start(message):
         bot.writeln("OPER {}\r\n".format(OPER))
-        bot.writeln("MODE {0} {1}\r\n".format(NICKNAME, MODES))
+        if MODES:
+            bot.writeln("MODE {0} {1}\r\n".format(NICKNAME, MODES))
 
     @bot.on('notice')
     def handle_connection_notice(message, user, target, text):
