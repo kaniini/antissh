@@ -13,6 +13,7 @@ ip = 162.220.112.99
 port = 6667
 # If enabled, skips trying to connect back to the target host above and ban clients as soon as a SSH login with default credentials succeeds
 #quick_mode = true
+outgoing_ip = ::
 
 # report to various DNSBLs
 [dnsbl]

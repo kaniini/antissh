@@ -24,11 +24,17 @@ OPER = config.get('host', 'oper', fallback='x x')
 NICKNAME = config.get('host', 'nickname', fallback='antissh')
 MODES = config.get('host', 'modes', fallback='')
 KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n')
+OUTGOING_IPPORT = (config.get('target', 'outgoing_ip', fallback='::'), 0)
 
-# advanced users only
+# advanced users only:
 # charybdis uses:
 # *** Notice -- Client connecting: kaniini_ (~kaniini@127.0.0.1) [127.0.0.1] {users} [William Pitcock]
 # re.findall(r'\[[0-9a-f\.:]+\]', message)
+# inspircd uses:
+# *** CONNECT: Client connecting on port 6667 (class unnamed...): kaniini!kaniini@127.0.0.1 (127.0.0.1) [kaniini]
+# *** REMOTECONNECT: Client connecting on port 6667 (class unnamed...): kaniini!kaniini@127.0.0.1 (127.0.0.1) [kaniini]
+# re.findall(r'\[[0-9a-f\.:]+\]')
+
 IP_REGEX = re.compile(r'Client connecting\:.*\[([0-9a-f\.:]+)\]')
 POSITIVE_HIT_STRING = b'Looking up your hostname'
 DEFAULT_CREDENTIALS = [
@@ -77,7 +83,7 @@ async def submit_dnsbl_im(ip):
 async def check_with_credentials(ip, target_ip, target_port, username, password):
     """Checks whether a given username or password works to open a direct TCP session."""
     try:
-        async with asyncssh.connect(ip, username=username, password=password, known_hosts=None) as conn:
+        async with asyncssh.connect(ip, username=username, password=password, known_hosts=None, local_addr=OUTGOING_IPPORT) as conn:
             if QUICK_MODE:
                 return True
             try:
@@ -133,7 +139,7 @@ def main():
         match = IP_REGEX.search(text)
         if match:
             ip = match.group(1)
-            
+
             if ip in ('0', '255.255.255.255', '127.0.0.1', '::1'):
                 return
 
