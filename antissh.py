@@ -24,6 +24,7 @@ OPER = config.get('host', 'oper', fallback='x x')
 NICKNAME = config.get('host', 'nickname', fallback='antissh')
 MODES = config.get('host', 'modes', fallback='')
 KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n')
+LOG_CHAN = config.get('host', 'log_chan', fallback=None)
 
 # advanced users only
 # charybdis uses:
@@ -94,6 +95,11 @@ async def check_with_credentials(ip, target_ip, target_port, username, password)
     except (asyncssh.Error, OSError):
         return False
 
+def log_chan(bot, msg):
+    if LOG_CHAN is None:
+        return
+    bot.writeln('PRIVMSG %s :%s' % (LOG_CHAN, msg))
+
 
 async def check_with_credentials_group(ip, target_ip, target_port, credentials_group=DEFAULT_CREDENTIALS):
     futures = [check_with_credentials(ip, target_ip, target_port, c[0], c[1]) for c in credentials_group]
@@ -106,6 +112,7 @@ async def check_connecting_client(bot, ip):
     result = await check_with_credentials_group(ip, TARGET_IP, TARGET_PORT)
     if result:
         print('found vulnerable SSH daemon at', ip)
+        log_chan(bot, 'found vulnerable SSH daemon at %s' % ip)
         bot.writeln(KLINE_CMD_TEMPLATE.format(ip=ip))
 
         if dnsbl_active:
@@ -125,6 +132,7 @@ def main():
         bot.writeln("OPER {}\r\n".format(OPER))
         if MODES:
             bot.writeln("MODE {0} {1}\r\n".format(NICKNAME, MODES))
+        log_chan(bot, 'antissh has started!')
 
     @bot.on('notice')
     def handle_connection_notice(message, user, target, text):
