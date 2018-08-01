@@ -10,6 +10,8 @@ import json
 from asyncirc import irc
 from configparser import ConfigParser
 import logging
+import pickle
+import os
 
 config = ConfigParser()
 config.read(sys.argv[1])
@@ -74,24 +76,40 @@ async def submit_dnsbl_im(ip):
     async with aiohttp.ClientSession() as session:
         await session.post('https://api.dnsbl.im/import', headers=headers, data=json.dumps(envelope))
 
-
+cache = {}
+cache_fname = 'cache.pickle'
 async def check_with_credentials(ip, target_ip, target_port, username, password):
     """Checks whether a given username or password works to open a direct TCP session."""
+    key = (ip, target_ip, target_port, username, password)
+    if key in cache:
+        return cache[key]
     try:
         async with asyncssh.connect(ip, username=username, password=password, known_hosts=None) as conn:
             if QUICK_MODE:
+                cache[key] = True
+                with open(cache_fname, 'wb') as fd:
+                    pickle.dump(cache, fd)
                 return True
             try:
                 reader, writer = await conn.open_connection(target_ip, target_port)
             except asyncssh.Error:
+                cache[key] = False
+                with open(cache_fname, 'wb') as fd:
+                    pickle.dump(cache, fd)
                 return False
 
             writer.write(b'\r\n')
             writer.write_eof()
 
             response = await reader.read()
+            cache[key] = POSITIVE_HIT_STRING in response
+            with open(cache_fname, 'wb') as fd:
+                pickle.dump(cache, fd)
             return POSITIVE_HIT_STRING in response
     except (asyncssh.Error, OSError):
+        cache[key] = False
+        with open(cache_fname, 'wb') as fd:
+            pickle.dump(cache, fd)
         return False
 
 
@@ -117,6 +135,10 @@ async def check_connecting_client(bot, ip):
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
+    global cache
+    if os.path.isfile(cache_fname):
+        with open(cache_fname, 'rb') as fd:
+            cache = pickle.load(fd)
     bot = irc.connect(HOST, PORT, use_ssl=USE_SSL)
     bot.register(NICKNAME, "antissh", "antissh proxy checking bot")
 
