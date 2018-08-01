@@ -22,6 +22,7 @@ PORT = config.getint('host', 'port', fallback=6667)
 USE_SSL = config.getboolean('host', 'ssl', fallback=False)
 OPER = config.get('host', 'oper', fallback='x x')
 NICKNAME = config.get('host', 'nickname', fallback='antissh')
+SERVER_PASSWORD = config.get('host', 'password', fallback=None)
 MODES = config.get('host', 'modes', fallback='')
 KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n')
 
@@ -118,7 +119,7 @@ async def check_connecting_client(bot, ip):
 def main():
     logging.basicConfig(level=logging.DEBUG)
     bot = irc.connect(HOST, PORT, use_ssl=USE_SSL)
-    bot.register(NICKNAME, "antissh", "antissh proxy checking bot")
+    bot.register(NICKNAME, "antissh", "antissh proxy checking bot", password=SERVER_PASSWORD)
 
     @bot.on('irc-001')
     def handle_connection_start(message):
