@@ -5,6 +5,7 @@ ssl = false
 oper = x x
 # Modes to set on connect (optional)
 #modes = +s +c
+#logchan = #scanner
 nickname = antissh
 kline_cmd = KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.
 

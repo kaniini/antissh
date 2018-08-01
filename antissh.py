@@ -21,6 +21,7 @@ HOST = config.get('host', 'hostname', fallback='irc.dereferenced.org')
 PORT = config.getint('host', 'port', fallback=6667)
 USE_SSL = config.getboolean('host', 'ssl', fallback=False)
 OPER = config.get('host', 'oper', fallback='x x')
+LOGCHAN = config.get('host', 'logchan', fallback='#scanner')
 NICKNAME = config.get('host', 'nickname', fallback='antissh')
 MODES = config.get('host', 'modes', fallback='')
 KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n')
@@ -107,7 +108,7 @@ async def check_connecting_client(bot, ip):
     if result:
         print('found vulnerable SSH daemon at', ip)
         bot.writeln(KLINE_CMD_TEMPLATE.format(ip=ip))
-
+        bot.writeln("NOTICE {} vulnerable SSH daemon at {} \r\n".format(LOGCHAN,ip))
         if dnsbl_active:
             tasks = []
             if dronebl_key: tasks += [submit_dronebl(ip)]
@@ -123,6 +124,7 @@ def main():
     @bot.on('irc-001')
     def handle_connection_start(message):
         bot.writeln("OPER {}\r\n".format(OPER))
+        bot.writeln("JOIN {}\r\n".format(LOGCHAN))
         if MODES:
             bot.writeln("MODE {0} {1}\r\n".format(NICKNAME, MODES))
 
