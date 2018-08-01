@@ -27,7 +27,7 @@ NICKNAME = config.get('host', 'nickname', fallback='antissh')
 SERVER_PASSWORD = config.get('host', 'password', fallback=None)
 MODES = config.get('host', 'modes', fallback='')
 KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n')
-BINDHOST = (config.get('target', 'outgoing_ip', fallback='::'), 0)
+BINDHOST = (config.get('target', 'bindhost', fallback='::'), 0)
 LOG_CHAN = config.get('host', 'log_chan', fallback=None)
 
 # advanced users only:
