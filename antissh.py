@@ -25,8 +25,6 @@ NICKNAME = config.get('host', 'nickname', fallback='antissh')
 MODES = config.get('host', 'modes', fallback='')
 KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n')
 LOG_CHAN = config.get('host', 'log_chan', fallback=None)
-if LOG_CHAN is not None:
-    LOG_CHAN = '#' + LOG_CHAN
 
 # advanced users only
 # charybdis uses:
