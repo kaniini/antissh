@@ -80,7 +80,10 @@ async def submit_dnsbl_im(ip):
 async def check_with_credentials(ip, target_ip, target_port, username, password):
     """Checks whether a given username or password works to open a direct TCP session."""
     try:
-        async with asyncssh.connect(ip, username=username, password=password, known_hosts=None) as conn:
+        async with asyncssh.connect(
+                ip, username=username, password=password,
+                known_hosts=None, client_keys=None, client_host_keys=None,
+                agent_path=None) as conn:
             if QUICK_MODE:
                 return True
             try:
