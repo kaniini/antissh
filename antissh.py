@@ -33,7 +33,7 @@ BINDHOST = (config.get('target', 'bindhost', fallback='::'), 0)
 LOG_CHAN = config.get('host', 'log_chan', fallback=None)
 CREDENTIAL_SCAN_LEVEL = config.getint('scan', 'level', fallback=1)
 GEOIP_DB = config.get('geoip', 'database_path', fallback=None)
-GEOIP_COUNTRY_WHITELIST = config.get('geoip', 'country_whitelist', fallback=[]).split()
+GEOIP_COUNTRY_WHITELIST = config.get('geoip', 'country_whitelist', fallback="").split()
 
 # advanced users only:
 # charybdis uses:
