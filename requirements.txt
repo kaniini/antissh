@@ -1,3 +1,4 @@
 asyncssh
 asyncio-irc
 aiohttp
+geoip2

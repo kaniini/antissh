@@ -8,6 +8,7 @@ import re
 import aiohttp
 import json
 import socket
+import sys
 from asyncirc import irc
 from configparser import ConfigParser
 import logging
@@ -31,6 +32,8 @@ KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip
 BINDHOST = (config.get('target', 'bindhost', fallback='::'), 0)
 LOG_CHAN = config.get('host', 'log_chan', fallback=None)
 CREDENTIAL_SCAN_LEVEL = config.getint('scan', 'level', fallback=1)
+GEOIP_DB = config.get('geoip', 'database_path', fallback=None)
+GEOIP_COUNTRY_WHITELIST = config.get('geoip', 'country_whitelist', fallback=[]).split()
 
 # advanced users only:
 # charybdis uses:
@@ -110,6 +113,23 @@ if CREDENTIAL_SCAN_LEVEL > 2:
 dronebl_key = config.get('dnsbl', 'dronebl_key', fallback=None)
 dnsbl_im_key = config.get('dnsbl', 'dnsbl_im_key', fallback=None)
 dnsbl_active = (dronebl_key is not None or dnsbl_im_key is not None)
+
+
+# geoip
+if GEOIP_DB and GEOIP_COUNTRY_WHITELIST:
+    try:
+        import geoip2.database
+        geoip = geoip2.database.Reader(GEOIP_DB)
+    except ModuleNotFoundError:
+        print("GEOIP_* configured but missing geoip2 library: pip install -r requirements.txt", file=sys.stderr)
+        sys.exit(1)
+
+
+def get_country_code(addr):
+    try:
+        return geoip.country(addr).country.iso_code
+    except (TypeError, NameError):
+        return None
 
 
 async def submit_dronebl(ip):
@@ -247,6 +267,11 @@ def main():
             ip = match.group(1)
 
             if ip in ('0', '255.255.255.255', '127.0.0.1', '::1'):
+                return
+
+            cc = get_country_code(ip)
+            if cc and cc in GEOIP_COUNTRY_WHITELIST:
+                print("{ip} is whitelisted based on country {cc}".format(ip=ip, cc=cc))
                 return
 
             asyncio.ensure_future(check_connecting_client(bot, ip))
