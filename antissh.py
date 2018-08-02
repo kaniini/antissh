@@ -122,7 +122,7 @@ async def submit_dronebl(ip):
     }
 
     async with aiohttp.ClientSession() as session:
-        resp = await session.post('https://dronebl.org/rpc2', headers=headers, data=envelope)
+        resp = await session.post('https://dronebl.org/RPC2', headers=headers, data=envelope)
         data = await resp.text()
 
         if 'success' not in data:
