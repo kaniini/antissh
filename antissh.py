@@ -29,7 +29,7 @@ MODES = config.get('host', 'modes', fallback='')
 KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n')
 BINDHOST = (config.get('target', 'bindhost', fallback='::'), 0)
 LOG_CHAN = config.get('host', 'log_chan', fallback=None)
-CREDENTIAL_SCAN_LEVEL = config.getint('scan', 'level', 1)
+CREDENTIAL_SCAN_LEVEL = config.getint('scan', 'level', fallback=1)
 
 # advanced users only:
 # charybdis uses:
