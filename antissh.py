@@ -7,6 +7,7 @@ import sys
 import re
 import aiohttp
 import json
+import socket
 from asyncirc import irc
 from configparser import ConfigParser
 import logging
@@ -199,8 +200,16 @@ async def check_with_credentials_group(ip, target_ip, target_port, credentials_g
 async def check_connecting_client(bot, ip):
     result = await check_with_credentials_group(ip, TARGET_IP, TARGET_PORT)
     if result:
-        print('found vulnerable SSH daemon at', ip)
-        log_chan(bot, 'found vulnerable SSH daemon at %s' % ip)
+        try:
+            ptr = socket.gethostbyaddr(ip)
+        except socket.error:
+            ptr = None
+
+        ptr = "({})".format(ptr[0]) if ptr else ""
+
+        print('found vulnerable SSH daemon at', ip, ptr)
+        log_chan(bot, 'found vulnerable SSH daemon at %s %s' % (ip, ptr))
+
         bot.writeln(KLINE_CMD_TEMPLATE.format(ip=ip))
 
         if dnsbl_active:
