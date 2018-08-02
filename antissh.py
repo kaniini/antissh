@@ -5,7 +5,6 @@ import asyncio
 import asyncssh
 import sys
 import re
-import aiohttp
 import json
 import socket
 import sys
@@ -113,7 +112,8 @@ if CREDENTIAL_SCAN_LEVEL > 2:
 dronebl_key = config.get('dnsbl', 'dronebl_key', fallback=None)
 dnsbl_im_key = config.get('dnsbl', 'dnsbl_im_key', fallback=None)
 dnsbl_active = (dronebl_key is not None or dnsbl_im_key is not None)
-
+if dnsbl_active:
+    import aiohttp
 
 # geoip
 if GEOIP_DB and GEOIP_COUNTRY_WHITELIST:
