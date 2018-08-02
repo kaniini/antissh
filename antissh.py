@@ -29,6 +29,7 @@ MODES = config.get('host', 'modes', fallback='')
 KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n')
 BINDHOST = (config.get('target', 'bindhost', fallback='::'), 0)
 LOG_CHAN = config.get('host', 'log_chan', fallback=None)
+CREDENTIAL_SCAN_LEVEL = config.getint('scan', 'level', 1)
 
 # advanced users only:
 # charybdis uses:
@@ -42,14 +43,67 @@ LOG_CHAN = config.get('host', 'log_chan', fallback=None)
 IP_REGEX = re.compile(r'Client connecting\:.*\[([0-9a-f\.:]+)\]')
 POSITIVE_HIT_STRING = b'Looking up your hostname'
 DEFAULT_CREDENTIALS = [
-    ('ADMIN', 'ADMIN'),
-    ('admin', '123456'),
+    ('ADMIN', 'ADMIN'),      # supermicro default IPMI
+    ('admin', '1234'),
+    ('admin', '12345'),
+    ('admin', '123456'),     # huawei
     ('admin', ''),
     ('root', ''),
     ('root', 'admin'),
+    ('root', 'root'),
+    ('root', 'changeme'),
+    ('root', 'password'),
+    ('root', 'calvin'),       # dell default IPMI
+    ('root', 'raspberrypi'),  # default on many raspberry pi images
+    ('root', 'rootme'),
     ('admin', 'admin'),
+    ('admin', 'changeme'),
+    ('admin', 'password'),
+    ('ubnt', 'ubnt'),         # edgeos default
     ('user', 'user')
 ]
+DEFAULT_CREDENTIALS_DEEP = [
+    ('root', 'toor'),
+    ('root', 'pass'),
+    ('root', '1234'),
+    ('root', '12345'),
+    ('root', '123456'),
+    ('admin', 'abc123'),
+    ('admin', 'admin123'),
+    ('bitnami', 'bitnami'),
+    ('cisco', 'cisco'),
+    ('device', 'apc'),
+    ('dpn', 'changeme'),
+    ('HPSupport', 'badg3r5'),
+    ('lp', 'lp'),
+    ('master', 'themaster01'),
+    ('osmc', 'osmc'),
+    ('pi', 'raspberry'),
+    ('plexuser', 'rasplex'),
+    ('sysadmin', 'PASS'),
+    ('user', 'live'),
+    ('vagrant', 'vagrant'),
+    ('virl', 'VIRL'),
+    ('vyos', 'vyos')
+]
+DEFAULT_CREDENTIALS_DEEPER = [
+    ('root', 'alien'),
+    ('root', 'alpine'),        # mac os server default
+    ('root', 'logapp'),
+    ('root', 'openelec'),
+    ('root', 'pixmet2003'),
+    ('root', 'soho'),
+    ('alien', 'alien'),
+    ('user', 'acme'),
+    ('toor', 'logapp'),
+]
+
+if CREDENTIAL_SCAN_LEVEL > 1:
+    DEFAULT_CREDENTIALS += DEFAULT_CREDENTIALS_DEEP
+
+if CREDENTIAL_SCAN_LEVEL > 2:
+    DEFAULT_CREDENTIALS += DEFAULT_CREDENTIALS_DEEPER
+
 
 # dnsbl settings
 dronebl_key = config.get('dnsbl', 'dronebl_key', fallback=None)

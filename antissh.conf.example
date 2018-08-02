@@ -26,3 +26,10 @@ bindhost = ::
 
 # ask for an API key from DNSBL.im at: https://www.dnsbl.im/api/request/
 # dnsbl_im_key=bvefrkjbggnergnjkerngjkerngjker
+
+# change scan settings
+[scan]
+# 1 = most common login combinations
+# 2 = somewhat common login combinations
+# 3 = rare login combinations
+level = 1
