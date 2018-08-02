@@ -33,7 +33,7 @@ BINDHOST = (config.get('target', 'bindhost', fallback='::'), 0)
 LOG_CHAN = config.get('host', 'log_chan', fallback=None)
 CREDENTIAL_SCAN_LEVEL = config.getint('scan', 'level', fallback=1)
 GEOIP_DB = config.get('geoip', 'database_path', fallback=None)
-GEOIP_COUNTRY_WHITELIST = config.get('geoip', 'country_whitelist', fallback=[]).split()
+GEOIP_COUNTRY_WHITELIST = config.get('geoip', 'country_whitelist', fallback="").split()
 
 # advanced users only:
 # charybdis uses:
@@ -254,7 +254,7 @@ def main():
         if MODES:
             bot.writeln("MODE {0} {1}\r\n".format(NICKNAME, MODES))
         if LOG_CHAN:
-            bot.writeln("JOIN {0}\r\n".format(LOG_CHAN)
+            bot.writeln("JOIN {0}\r\n".format(LOG_CHAN))
         log_chan(bot, 'antissh has started!')
 
     @bot.on('notice')
