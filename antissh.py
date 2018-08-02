@@ -27,12 +27,18 @@ NICKNAME = config.get('host', 'nickname', fallback='antissh')
 SERVER_PASSWORD = config.get('host', 'password', fallback=None)
 MODES = config.get('host', 'modes', fallback='')
 KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n')
+BINDHOST = (config.get('target', 'bindhost', fallback='::'), 0)
 LOG_CHAN = config.get('host', 'log_chan', fallback=None)
 
-# advanced users only
+# advanced users only:
 # charybdis uses:
 # *** Notice -- Client connecting: kaniini_ (~kaniini@127.0.0.1) [127.0.0.1] {users} [William Pitcock]
 # re.findall(r'\[[0-9a-f\.:]+\]', message)
+# inspircd uses:
+# *** CONNECT: Client connecting on port 6667 (class unnamed...): kaniini!kaniini@127.0.0.1 (127.0.0.1) [kaniini]
+# *** REMOTECONNECT: Client connecting on port 6667 (class unnamed...): kaniini!kaniini@127.0.0.1 (127.0.0.1) [kaniini]
+# re.findall(r'\([0-9a-f\.:]+\)')
+
 IP_REGEX = re.compile(r'Client connecting\:.*\[([0-9a-f\.:]+)\]')
 POSITIVE_HIT_STRING = b'Looking up your hostname'
 DEFAULT_CREDENTIALS = [
@@ -95,7 +101,7 @@ async def check_with_credentials(ip, target_ip, target_port, username, password)
         async with asyncssh.connect(
                 ip, username=username, password=password,
                 known_hosts=None, client_keys=None, client_host_keys=None,
-                agent_path=None) as conn:
+                agent_path=None, local_addr = BINDHOST) as conn:
             if QUICK_MODE:
                 cache[key] = True
                 with open(cache_fname, 'wb') as fd:
@@ -174,7 +180,7 @@ def main():
         match = IP_REGEX.search(text)
         if match:
             ip = match.group(1)
-            
+
             if ip in ('0', '255.255.255.255', '127.0.0.1', '::1'):
                 return
 
