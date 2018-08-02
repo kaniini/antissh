@@ -5,7 +5,6 @@ import asyncio
 import asyncssh
 import sys
 import re
-import aiohttp
 import json
 import socket
 import sys
@@ -29,11 +28,14 @@ NICKNAME = config.get('host', 'nickname', fallback='antissh')
 SERVER_PASSWORD = config.get('host', 'password', fallback=None)
 MODES = config.get('host', 'modes', fallback='')
 KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n')
-BINDHOST = (config.get('target', 'bindhost', fallback='::'), 0)
+BINDHOST = config.get('target', 'bindhost', fallback=None)
 LOG_CHAN = config.get('host', 'log_chan', fallback=None)
 CREDENTIAL_SCAN_LEVEL = config.getint('scan', 'level', fallback=1)
 GEOIP_DB = config.get('geoip', 'database_path', fallback=None)
 GEOIP_COUNTRY_WHITELIST = config.get('geoip', 'country_whitelist', fallback="").split()
+
+if BINDHOST is not None:
+    BINDHOST = (BINDHOST, 0)
 
 # advanced users only:
 # charybdis uses:
@@ -113,7 +115,8 @@ if CREDENTIAL_SCAN_LEVEL > 2:
 dronebl_key = config.get('dnsbl', 'dronebl_key', fallback=None)
 dnsbl_im_key = config.get('dnsbl', 'dnsbl_im_key', fallback=None)
 dnsbl_active = (dronebl_key is not None or dnsbl_im_key is not None)
-
+if dnsbl_active:
+    import aiohttp
 
 # geoip
 if GEOIP_DB and GEOIP_COUNTRY_WHITELIST:
@@ -176,7 +179,7 @@ async def check_with_credentials(ip, target_ip, target_port, username, password)
         async with asyncssh.connect(
                 ip, username=username, password=password,
                 known_hosts=None, client_keys=None, client_host_keys=None,
-                agent_path=None, local_addr = BINDHOST) as conn:
+                agent_path=None, local_addr=BINDHOST) as conn:
             if QUICK_MODE:
                 cache[key] = True
                 with open(cache_fname, 'wb') as fd:
