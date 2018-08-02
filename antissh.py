@@ -60,7 +60,11 @@ async def submit_dronebl(ip):
     }
 
     async with aiohttp.ClientSession() as session:
-        await session.post('https://dronebl.org/rpc2', headers=headers, data=envelope)
+        resp = await session.post('https://dronebl.org/rpc2', headers=headers, data=envelope)
+        data = await resp.text()
+
+        if 'success' not in data:
+            print('dronebl submission error:', data)
 
 
 async def submit_dnsbl_im(ip):
