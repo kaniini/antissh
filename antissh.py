@@ -224,6 +224,8 @@ def main():
         bot.writeln("OPER {}\r\n".format(OPER))
         if MODES:
             bot.writeln("MODE {0} {1}\r\n".format(NICKNAME, MODES))
+        if LOG_CHAN:
+            bot.writeln("JOIN {0}\r\n".format(LOG_CHAN)
         log_chan(bot, 'antissh has started!')
 
     @bot.on('notice')
