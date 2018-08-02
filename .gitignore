@@ -94,4 +94,6 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# Stuff from this repo
 antissh.conf
+cache.pickle
