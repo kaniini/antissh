@@ -7,7 +7,6 @@ import sys
 import re
 import json
 import socket
-import sys
 from asyncirc import irc
 from configparser import ConfigParser
 import logging
@@ -30,6 +29,7 @@ MODES = config.get('host', 'modes', fallback='')
 KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n')
 BINDHOST = config.get('target', 'bindhost', fallback=None)
 LOG_CHAN = config.get('host', 'log_chan', fallback=None)
+LOG_CHAN_KEY = config.get('host', 'log_chan_key', fallback=None)
 CREDENTIAL_SCAN_LEVEL = config.getint('scan', 'level', fallback=1)
 GEOIP_DB = config.get('geoip', 'database_path', fallback=None)
 GEOIP_COUNTRY_WHITELIST = config.get('geoip', 'country_whitelist', fallback="").split()
@@ -46,7 +46,7 @@ if BINDHOST is not None:
 # *** REMOTECONNECT: Client connecting on port 6667 (class unnamed...): kaniini!kaniini@127.0.0.1 (127.0.0.1) [kaniini]
 # re.findall(r'\([0-9a-f\.:]+\)')
 
-IP_REGEX = re.compile(r'Client connecting\:.*\[([0-9a-f\.:]+)\].*{.*}.*')
+IP_REGEX = re.compile(r'Client connecting.*\[([0-9a-f\.:]+)\].*{.*}.*')
 POSITIVE_HIT_STRING = b'Looking up your hostname'
 DEFAULT_CREDENTIALS = [
     ('ADMIN', 'ADMIN'),      # supermicro default IPMI
@@ -257,7 +257,7 @@ def main():
         if MODES:
             bot.writeln("MODE {0} {1}\r\n".format(NICKNAME, MODES))
         if LOG_CHAN:
-            bot.writeln("JOIN {0}\r\n".format(LOG_CHAN))
+            bot.writeln("JOIN {0} {1}\r\n".format(LOG_CHAN, LOG_CHAN_KEY))
         log_chan(bot, 'antissh has started!')
 
     @bot.on('notice')

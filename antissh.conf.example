@@ -11,6 +11,7 @@ kline_cmd = KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Pleas
 #password =
 # Log when vulnerable hosts are found to this channel
 #log_chan = #antissh-log
+#log_chan_key = yourkeyhere
 
 [target]
 ip = 162.220.112.99
