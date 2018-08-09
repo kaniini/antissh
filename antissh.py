@@ -46,7 +46,7 @@ if BINDHOST is not None:
 # *** REMOTECONNECT: Client connecting on port 6667 (class unnamed...): kaniini!kaniini@127.0.0.1 (127.0.0.1) [kaniini]
 # re.findall(r'\([0-9a-f\.:]+\)')
 
-IP_REGEX = re.compile(r'Client connecting.*\[([0-9a-f\.:]+)\]')
+IP_REGEX = re.compile(r'Client connecting.*\[([0-9a-f\.:]+)\].*{.*}.*')
 POSITIVE_HIT_STRING = b'Looking up your hostname'
 DEFAULT_CREDENTIALS = [
     ('ADMIN', 'ADMIN'),      # supermicro default IPMI
