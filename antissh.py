@@ -174,9 +174,8 @@ async def submit_dnsbl_im(ip):
 
 
 def log_chan(bot, msg):
-    if LOG_CHAN is None:
-        return
-    bot.writeln('PRIVMSG %s :%s' % (LOG_CHAN, msg))
+    if LOG_CHAN is not None:
+        bot.writeln('PRIVMSG %s :%s' % (LOG_CHAN, msg))
 
 
 cache = {}
