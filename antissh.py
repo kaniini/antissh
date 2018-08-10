@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 # dependencies: asyncssh, asyncio-irc
 
-import asyncio
-import asyncssh
 import sys
 import re
 import json
 import socket
-from asyncirc import irc
-from configparser import ConfigParser
 import logging
 import pickle
 import os
-import binascii
+from configparser import ConfigParser
+
+import asyncio
+import asyncssh
+from asyncirc import irc
+
 
 config = ConfigParser()
 config.read(sys.argv[1])
@@ -27,7 +28,11 @@ OPER = config.get('host', 'oper', fallback='x x')
 NICKNAME = config.get('host', 'nickname', fallback='antissh')
 SERVER_PASSWORD = config.get('host', 'password', fallback=None)
 MODES = config.get('host', 'modes', fallback='')
-KLINE_CMD_TEMPLATE = config.get('host', 'kline_cmd', fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  Please fix your SSH daemon and try again later.\r\n')
+KLINE_CMD_TEMPLATE = config.get(
+    'host', 'kline_cmd',
+    fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  '
+             'Please fix your SSH daemon and try again later.\r\n',
+)
 BINDHOST = config.get('target', 'bindhost', fallback=None)
 LOG_CHAN = config.get('host', 'log_chan', fallback=None)
 LOG_CHAN_KEY = config.get('host', 'log_chan_key', fallback=None)
@@ -50,7 +55,7 @@ if BINDHOST is not None:
 IP_REGEX = re.compile(r'Client connecting.*\[([0-9a-f\.:]+)\].*{.*}.*')
 POSITIVE_HIT_STRING = b'Looking up your hostname'
 BASIC_CREDENTIALS = [
-    ('admin', '123456')      # huawei
+    ('admin', '123456'),     # huawei
 ]
 DEFAULT_CREDENTIALS = BASIC_CREDENTIALS + [
     ('ADMIN', 'ADMIN'),      # supermicro default IPMI
@@ -69,7 +74,7 @@ DEFAULT_CREDENTIALS = BASIC_CREDENTIALS + [
     ('admin', 'changeme'),
     ('admin', 'password'),
     ('ubnt', 'ubnt'),         # edgeos default
-    ('user', 'user')
+    ('user', 'user'),
 ]
 DEFAULT_CREDENTIALS_DEEP = [
     ('root', 'toor'),
@@ -93,7 +98,7 @@ DEFAULT_CREDENTIALS_DEEP = [
     ('user', 'live'),
     ('vagrant', 'vagrant'),
     ('virl', 'VIRL'),
-    ('vyos', 'vyos')
+    ('vyos', 'vyos'),
 ]
 DEFAULT_CREDENTIALS_DEEPER = [
     ('root', 'alien'),
@@ -143,9 +148,7 @@ async def submit_dronebl(ip):
         ip=ip, comment='A vulnerable SSH server on an IOT gateway, detected by antissh.')
     envelope = '<?xml version="1.0"?><request key="{key}">{stanza}</request>'.format(
         key=dronebl_key, stanza=add_stanza)
-    headers = {
-        'Content-Type': 'text/xml'
-    }
+    headers = {'Content-Type': 'text/xml'}
 
     async with aiohttp.ClientSession() as session:
         resp = await session.post('https://dronebl.org/RPC2', headers=headers, data=envelope)
@@ -161,12 +164,10 @@ async def submit_dnsbl_im(ip):
         'addresses': [{
             'ip': ip,
             'type': '4',
-            'reason': 'A vulnerable SSH server on an IOT gateway, detected by antissh.'
-        }]
+            'reason': 'A vulnerable SSH server on an IOT gateway, detected by antissh.',
+        }],
     }
-    headers = {
-        'Content-Type': 'application/json'
-    }
+    headers = {'Content-Type': 'application/json'}
 
     async with aiohttp.ClientSession() as session:
         await session.post('https://api.dnsbl.im/import', headers=headers, data=json.dumps(envelope))
@@ -180,6 +181,8 @@ def log_chan(bot, msg):
 
 cache = {}
 cache_fname = 'cache.pickle'
+
+
 async def check_with_credentials(ip, target_ip, target_port, username, password):
     """Checks whether a given username or password works to open a direct TCP session."""
     key = (ip, target_ip, target_port, username, password)
@@ -226,7 +229,10 @@ async def fetch_banner(ip):
 
 
 async def check_with_credentials_group(ip, target_ip, target_port, credentials_group=DEFAULT_CREDENTIALS):
-    futures = asyncio.as_completed(map(lambda c: check_with_credentials(ip, target_ip, target_port, c[0], c[1]), credentials_group))
+    futures = asyncio.as_completed(
+        map(lambda c: check_with_credentials(ip, target_ip, target_port, c[0], c[1]),
+            credentials_group),
+    )
     for future in futures:
         result = await future
         if result:
@@ -247,14 +253,14 @@ async def check_with_credentials_shallow(ip, target_ip, target_port):
 
     result = await check_with_credentials_group(ip, target_ip, target_port, creds)
 
-    if result == True:
+    if result:
         return True
 
     # recheck if BASIC credentials check failed with full set
     if creds == BASIC_CREDENTIALS:
         result = await check_with_credentials_group(ip, target_ip, target_port)
 
-    return result == True
+    return bool(result)
 
 
 async def check_connecting_client(bot, ip):
@@ -274,22 +280,23 @@ async def check_connecting_client(bot, ip):
 
         if dnsbl_active:
             tasks = []
-            if dronebl_key: tasks += [submit_dronebl(ip)]
-            if dnsbl_im_key: tasks += [submit_dnsbl_im(ip)]
+            if dronebl_key:
+                tasks += [submit_dronebl(ip)]
+            if dnsbl_im_key:
+                tasks += [submit_dnsbl_im(ip)]
             await asyncio.wait(tasks)
 
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
-    global cache
     if os.path.isfile(cache_fname):
         with open(cache_fname, 'rb') as fd:
-            cache = pickle.load(fd)
+            cache.update(pickle.load(fd))
     bot = irc.connect(HOST, PORT, use_ssl=USE_SSL)
     bot.register(NICKNAME, "antissh", "antissh proxy checking bot", password=SERVER_PASSWORD)
 
     @bot.on('irc-001')
-    def handle_connection_start(message):
+    def handle_connection_start(_):
         bot.writeln("OPER {}\r\n".format(OPER))
         if MODES:
             bot.writeln("MODE {0} {1}\r\n".format(NICKNAME, MODES))
@@ -298,7 +305,7 @@ def main():
         log_chan(bot, 'antissh has started!')
 
     @bot.on('notice')
-    def handle_connection_notice(message, user, target, text):
+    def handle_connection_notice(_message, _user, _target, text):
         if 'connecting' not in text:
             return
 

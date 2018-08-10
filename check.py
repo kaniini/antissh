@@ -1,5 +1,6 @@
 import sys
 import asyncio
+from antissh import check_with_credentials_shallow, TARGET_IP, TARGET_PORT
 
 
 def usage():
@@ -7,19 +8,16 @@ def usage():
     exit()
 
 
-if len(sys.argv) < 3:
-    usage()
-
-
-from antissh import fetch_banner, check_with_credentials_shallow, TARGET_IP, TARGET_PORT
-
-
 def main():
-    ip = sys.argv[2]
+    if len(sys.argv) < 3:
+        usage()
 
-    print('checking', ip)
+    address = sys.argv[2]
+
+    print('checking', address)
     loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(check_with_credentials_shallow(ip, TARGET_IP, TARGET_PORT))
+    result = loop.run_until_complete(
+        check_with_credentials_shallow(address, TARGET_IP, TARGET_PORT))
     print('result:', result)
 
 
