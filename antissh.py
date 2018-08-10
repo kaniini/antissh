@@ -226,10 +226,13 @@ async def fetch_banner(ip):
 
 
 async def check_with_credentials_group(ip, target_ip, target_port, credentials_group=DEFAULT_CREDENTIALS):
-    futures = [check_with_credentials(ip, target_ip, target_port, c[0], c[1]) for c in credentials_group]
-    results = await asyncio.gather(*futures)
+    futures = asyncio.as_completed(map(lambda c: check_with_credentials(ip, target_ip, target_port, c[0], c[1]), credentials_group))
+    for future in futures:
+        result = await future
+        if result:
+            return True
 
-    return True in results
+    return False
 
 
 async def check_with_credentials_shallow(ip, target_ip, target_port):
