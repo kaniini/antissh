@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # dependencies: asyncssh, asyncio-irc
+"""An IRC bot which monitors for compromised embedded devices being used as proxies."""
+
 
 import sys
 import re
@@ -137,6 +139,7 @@ if GEOIP_DB and GEOIP_COUNTRY_WHITELIST:
 
 
 def get_country_code(addr):
+    """Get the ISO country code from a client IP address."""
     try:
         return geoip.country(addr).country.iso_code
     except (TypeError, NameError):
@@ -144,6 +147,7 @@ def get_country_code(addr):
 
 
 async def submit_dronebl(ip):
+    """Submit detected bot to DroneBL."""
     add_stanza = '<add ip="{ip}" type="15" port="22" comment="{comment}" />'.format(
         ip=ip, comment='A vulnerable SSH server on an IOT gateway, detected by antissh.')
     envelope = '<?xml version="1.0"?><request key="{key}">{stanza}</request>'.format(
@@ -159,6 +163,7 @@ async def submit_dronebl(ip):
 
 
 async def submit_dnsbl_im(ip):
+    """Submit detected bot to DNSBL IM."""
     envelope = {
         'key': dnsbl_im_key,
         'addresses': [{
@@ -174,6 +179,7 @@ async def submit_dnsbl_im(ip):
 
 
 def log_chan(bot, msg):
+    """Log a given message to channel LOG_CHAN."""
     if LOG_CHAN is not None:
         bot.writeln('PRIVMSG %s :%s' % (LOG_CHAN, msg))
 
@@ -183,7 +189,7 @@ cache_fname = 'cache.pickle'
 
 
 async def check_with_credentials(ip, target_ip, target_port, username, password):
-    """Checks whether a given username or password works to open a direct TCP session."""
+    """Check whether a given username or password works to open a direct TCP session."""
     key = (ip, target_ip, target_port, username, password)
     if key in cache:
         return cache[key]
@@ -222,12 +228,14 @@ async def check_with_credentials(ip, target_ip, target_port, username, password)
 
 
 async def fetch_banner(ip):
+    """Fetch the SSH banner from a remote server."""
     reader, writer = await asyncio.open_connection(ip, 22)
     writer.write_eof()
     return (await reader.read())
 
 
 async def check_with_credentials_group(ip, target_ip, target_port, credentials_group=DEFAULT_CREDENTIALS):
+    """Check a list of credentials against a target system."""
     futures = asyncio.as_completed(
         map(lambda c: check_with_credentials(ip, target_ip, target_port, c[0], c[1]),
             credentials_group),
@@ -241,6 +249,7 @@ async def check_with_credentials_group(ip, target_ip, target_port, credentials_g
 
 
 async def check_with_credentials_shallow(ip, target_ip, target_port):
+    """Perform a shallow test against a target system."""
     # TODO: check for known bad data in kx, maybe we can avoid auth altogether
     banner = await fetch_banner(ip)
 
@@ -263,6 +272,7 @@ async def check_with_credentials_shallow(ip, target_ip, target_port):
 
 
 async def check_connecting_client(bot, ip):
+    """Check a newly-connected client."""
     result = await check_with_credentials_shallow(ip, TARGET_IP, TARGET_PORT)
     if result:
         try:
@@ -287,6 +297,7 @@ async def check_connecting_client(bot, ip):
 
 
 def main():
+    """CLI entry point for antissh."""
     logging.basicConfig(level=logging.DEBUG)
     if os.path.isfile(cache_fname):
         with open(cache_fname, 'rb') as fd:

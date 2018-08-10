@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 
+"""Perform a shallow test against a single target."""
+
 import sys
 import asyncio
 from antissh import check_with_credentials_shallow, TARGET_IP, TARGET_PORT
 
 
 def usage():
+    """Print an error message explaining the expected use and exit."""
     print('usage: python3 check.py config ip')
     exit()
 
 
 def main():
+    """CLI entry point for antissh.check."""
     if len(sys.argv) < 3:
         usage()
 
