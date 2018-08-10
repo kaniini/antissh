@@ -168,6 +168,13 @@ async def submit_dnsbl_im(ip):
     async with aiohttp.ClientSession() as session:
         await session.post('https://api.dnsbl.im/import', headers=headers, data=json.dumps(envelope))
 
+
+def log_chan(bot, msg):
+    if LOG_CHAN is None:
+        return
+    bot.writeln('PRIVMSG %s :%s' % (LOG_CHAN, msg))
+
+
 cache = {}
 cache_fname = 'cache.pickle'
 async def check_with_credentials(ip, target_ip, target_port, username, password):
@@ -206,11 +213,6 @@ async def check_with_credentials(ip, target_ip, target_port, username, password)
         with open(cache_fname, 'wb') as fd:
             pickle.dump(cache, fd)
         return False
-
-def log_chan(bot, msg):
-    if LOG_CHAN is None:
-        return
-    bot.writeln('PRIVMSG %s :%s' % (LOG_CHAN, msg))
 
 
 async def check_with_credentials_group(ip, target_ip, target_port, credentials_group=DEFAULT_CREDENTIALS):
