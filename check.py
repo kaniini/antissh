@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 import asyncio
 from antissh import check_with_credentials_shallow, TARGET_IP, TARGET_PORT
