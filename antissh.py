@@ -12,6 +12,7 @@ from configparser import ConfigParser
 import logging
 import pickle
 import os
+import binascii
 
 config = ConfigParser()
 config.read(sys.argv[1])
@@ -48,11 +49,13 @@ if BINDHOST is not None:
 
 IP_REGEX = re.compile(r'Client connecting.*\[([0-9a-f\.:]+)\].*{.*}.*')
 POSITIVE_HIT_STRING = b'Looking up your hostname'
-DEFAULT_CREDENTIALS = [
+BASIC_CREDENTIALS = [
+    ('admin', '123456')      # huawei
+]
+DEFAULT_CREDENTIALS = BASIC_CREDENTIALS + [
     ('ADMIN', 'ADMIN'),      # supermicro default IPMI
     ('admin', '1234'),
     ('admin', '12345'),
-    ('admin', '123456'),     # huawei
     ('admin', ''),
     ('root', ''),
     ('root', 'admin'),
@@ -192,6 +195,7 @@ async def check_with_credentials(ip, target_ip, target_port, username, password)
                 with open(cache_fname, 'wb') as fd:
                     pickle.dump(cache, fd)
                 return True
+
             try:
                 reader, writer = await conn.open_connection(target_ip, target_port)
             except asyncssh.Error:
@@ -215,6 +219,12 @@ async def check_with_credentials(ip, target_ip, target_port, username, password)
         return False
 
 
+async def fetch_banner(ip):
+    reader, writer = await asyncio.open_connection(ip, 22)
+    writer.write_eof()
+    return (await reader.read())
+
+
 async def check_with_credentials_group(ip, target_ip, target_port, credentials_group=DEFAULT_CREDENTIALS):
     futures = [check_with_credentials(ip, target_ip, target_port, c[0], c[1]) for c in credentials_group]
     results = await asyncio.gather(*futures)
@@ -222,8 +232,30 @@ async def check_with_credentials_group(ip, target_ip, target_port, credentials_g
     return True in results
 
 
+async def check_with_credentials_shallow(ip, target_ip, target_port):
+    # TODO: check for known bad data in kx, maybe we can avoid auth altogether
+    banner = await fetch_banner(ip)
+
+    creds = DEFAULT_CREDENTIALS
+
+    # if dropbear, odds are likely it is a huawei device, check for that first.
+    if b'dropbear' in banner:
+        creds = BASIC_CREDENTIALS
+
+    result = await check_with_credentials_group(ip, target_ip, target_port, creds)
+
+    if result == True:
+        return True
+
+    # recheck if BASIC credentials check failed with full set
+    if creds == BASIC_CREDENTIALS:
+        result = await check_with_credentials_group(ip, target_ip, target_port)
+
+    return result == True
+
+
 async def check_connecting_client(bot, ip):
-    result = await check_with_credentials_group(ip, TARGET_IP, TARGET_PORT)
+    result = await check_with_credentials_shallow(ip, TARGET_IP, TARGET_PORT)
     if result:
         try:
             ptr = socket.gethostbyaddr(ip)
