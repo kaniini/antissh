@@ -41,7 +41,7 @@ LOG_CHAN = config.get('host', 'log_chan', fallback=None)                # type: 
 LOG_CHAN_KEY = config.get('host', 'log_chan_key', fallback=None)        # type: ignore
 CREDENTIAL_SCAN_LEVEL = config.getint('scan', 'level', fallback=1)
 GEOIP_DB = config.get('geoip', 'database_path', fallback=None)          # type: ignore
-GEOIP_COUNTRY_WHITELIST = config.get('geoip', 'country_whitelist', fallback="").split()
+GEOIP_COUNTRY_WHITELIST = frozenset(config.get('geoip', 'country_whitelist', fallback="").split())
 
 BINDHOST = None
 if _BINDHOST is not None:
