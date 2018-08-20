@@ -58,10 +58,10 @@ if _BINDHOST is not None:
 
 IP_REGEX = re.compile(r'Client connecting.*\[([0-9a-f\.:]+)\].*{.*}.*')
 POSITIVE_HIT_STRING = b'Looking up your hostname'
-BASIC_CREDENTIALS = [
+BASIC_CREDENTIALS = (
     ('admin', '123456'),     # huawei
-]
-DEFAULT_CREDENTIALS = BASIC_CREDENTIALS + [
+)
+NORMAL_CREDENTIALS = BASIC_CREDENTIALS + (
     ('ADMIN', 'ADMIN'),      # supermicro default IPMI
     ('admin', '1234'),
     ('admin', '12345'),
@@ -79,8 +79,8 @@ DEFAULT_CREDENTIALS = BASIC_CREDENTIALS + [
     ('admin', 'password'),
     ('ubnt', 'ubnt'),         # edgeos default
     ('user', 'user'),
-]
-DEFAULT_CREDENTIALS_DEEP = [
+)
+DEEP_CREDENTIALS = NORMAL_CREDENTIALS + (
     ('root', 'toor'),
     ('root', 'pass'),
     ('root', '1234'),
@@ -103,8 +103,8 @@ DEFAULT_CREDENTIALS_DEEP = [
     ('vagrant', 'vagrant'),
     ('virl', 'VIRL'),
     ('vyos', 'vyos'),
-]
-DEFAULT_CREDENTIALS_DEEPER = [
+)
+DEEPER_CREDENTIALS = DEEP_CREDENTIALS + (
     ('root', 'alien'),
     ('root', 'alpine'),        # mac os server default
     ('root', 'logapp'),
@@ -114,14 +114,16 @@ DEFAULT_CREDENTIALS_DEEPER = [
     ('alien', 'alien'),
     ('user', 'acme'),
     ('toor', 'logapp'),
-]
-
-if CREDENTIAL_SCAN_LEVEL > 1:
-    DEFAULT_CREDENTIALS += DEFAULT_CREDENTIALS_DEEP
+)
 
 if CREDENTIAL_SCAN_LEVEL > 2:
-    DEFAULT_CREDENTIALS += DEFAULT_CREDENTIALS_DEEPER
+    DEFAULT_CREDENTIALS = DEEPER_CREDENTIALS
 
+elif CREDENTIAL_SCAN_LEVEL > 1:
+    DEFAULT_CREDENTIALS = DEEP_CREDENTIALS
+
+else:
+    DEFAULT_CREDENTIALS = NORMAL_CREDENTIALS
 
 # dnsbl settings
 dronebl_key = config.get('dnsbl', 'dronebl_key', fallback=None)    # type: ignore
