@@ -11,6 +11,7 @@ import logging
 import pickle
 import os
 from configparser import ConfigParser
+from typing import Dict, Tuple
 
 import asyncio
 import asyncssh
@@ -22,28 +23,29 @@ config.read(sys.argv[1])
 
 TARGET_IP = config.get('target', 'ip', fallback='162.220.112.99')
 TARGET_PORT = config.getint('target', 'port', fallback=6667)
-QUICK_MODE = config.getboolean('target', 'quick_mode', fallback=False)
+QUICK_MODE = config.getboolean('target', 'quick_mode', fallback=False)  # type: ignore
 HOST = config.get('host', 'hostname', fallback='irc.dereferenced.org')
 PORT = config.getint('host', 'port', fallback=6667)
-USE_SSL = config.getboolean('host', 'ssl', fallback=False)
+USE_SSL = config.getboolean('host', 'ssl', fallback=False)              # type: ignore
 OPER = config.get('host', 'oper', fallback='x x')
 NICKNAME = config.get('host', 'nickname', fallback='antissh')
-SERVER_PASSWORD = config.get('host', 'password', fallback=None)
+SERVER_PASSWORD = config.get('host', 'password', fallback=None)         # type: ignore
 MODES = config.get('host', 'modes', fallback='')
 KLINE_CMD_TEMPLATE = config.get(
     'host', 'kline_cmd',
     fallback='KLINE 86400 *@{ip} :Vulnerable SSH daemon found on this host.  '
              'Please fix your SSH daemon and try again later.\r\n',
 )
-BINDHOST = config.get('target', 'bindhost', fallback=None)
-LOG_CHAN = config.get('host', 'log_chan', fallback=None)
-LOG_CHAN_KEY = config.get('host', 'log_chan_key', fallback=None)
+_BINDHOST = config.get('target', 'bindhost', fallback=None)             # type: ignore
+LOG_CHAN = config.get('host', 'log_chan', fallback=None)                # type: ignore
+LOG_CHAN_KEY = config.get('host', 'log_chan_key', fallback=None)        # type: ignore
 CREDENTIAL_SCAN_LEVEL = config.getint('scan', 'level', fallback=1)
-GEOIP_DB = config.get('geoip', 'database_path', fallback=None)
+GEOIP_DB = config.get('geoip', 'database_path', fallback=None)          # type: ignore
 GEOIP_COUNTRY_WHITELIST = config.get('geoip', 'country_whitelist', fallback="").split()
 
-if BINDHOST is not None:
-    BINDHOST = (BINDHOST, 0)
+BINDHOST = None
+if _BINDHOST is not None:
+    BINDHOST = (_BINDHOST, 0)
 
 # advanced users only:
 # charybdis uses:
@@ -122,8 +124,8 @@ if CREDENTIAL_SCAN_LEVEL > 2:
 
 
 # dnsbl settings
-dronebl_key = config.get('dnsbl', 'dronebl_key', fallback=None)
-dnsbl_im_key = config.get('dnsbl', 'dnsbl_im_key', fallback=None)
+dronebl_key = config.get('dnsbl', 'dronebl_key', fallback=None)    # type: ignore
+dnsbl_im_key = config.get('dnsbl', 'dnsbl_im_key', fallback=None)  # type: ignore
 dnsbl_active = (dronebl_key is not None or dnsbl_im_key is not None)
 if dnsbl_active:
     import aiohttp
@@ -184,11 +186,11 @@ def log_chan(bot, msg):
         bot.writeln('PRIVMSG %s :%s' % (LOG_CHAN, msg))
 
 
-cache = {}
+cache: Dict[Tuple[str, str, int, str, str], bool] = {}
 cache_fname = 'cache.pickle'
 
 
-async def check_with_credentials(ip, target_ip, target_port, username, password):
+async def check_with_credentials(ip: str, target_ip: str, target_port: int, username: str, password: str) -> bool:
     """Check whether a given username or password works to open a direct TCP session."""
     key = (ip, target_ip, target_port, username, password)
     if key in cache:
