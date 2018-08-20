@@ -31,7 +31,8 @@ disable=missing-docstring,
         superfluous-parens,
         invalid-name,
         duplicate-argument-name,
-        unused-variable
+        unused-variable,
+        redefined-variable-type
 
 
 [REPORTS]
