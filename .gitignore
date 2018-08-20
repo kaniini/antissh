@@ -97,3 +97,4 @@ ENV/
 # Stuff from this repo
 antissh.conf
 cache.pickle
+.mypy_cache
